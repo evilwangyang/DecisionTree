@@ -30,6 +30,34 @@ def createDataSet():
 	labels = ['no surfacing','flippers']
 	return dataSet,labels
 
+def splitDataSet(dataSet,axis,value):
+	retDataSet = []
+	for featVec in dataSet:
+		if featVec[axis] == value:
+			reducedFeatVec = featVec[:axis]
+			reducedFeatVec.extend(featVec[axis+1:])
+			retDataSet.append(reducedFeatVec)
+	return retDataSet
+
+def chooseBestFeatureToSplit(dataSet):
+	numFeatures = len(dataSet[0]) - 1
+	baseEntropy = calcShannonEnt(dataSet)
+	bestInfoGain = 0.0
+	bestFeature = -1
+	for i in range(numFeatures):
+		featList = [example[i] for example in dataSet]
+		uniqueVals = set(featList)
+		newEntropy = 0.0
+		for value in uniqueVals:
+			subDataSet = splitDataSet(dataSet,i,value)
+			prob = len(subDataSet)/float(len(dataSet))
+			newEntropy += prob * calcShannonEnt(subDataSet)
+		infoGain = baseEntropy - newEntropy
+		if infoGain > bestInfoGain:
+			bestInfoGain = infoGain
+			bestFeature = i
+	return bestFeature
+
 if __name__ == '__main__':
 
 	myDat,labels = createDataSet()
@@ -38,3 +66,12 @@ if __name__ == '__main__':
 	myDat[0][-1] = 'maybe'
 	shannonEnt2 = calcShannonEnt(myDat)
 	print(shannonEnt2)
+
+	print(myDat)
+	splitResult1 = splitDataSet(myDat,0,1)
+	print(splitResult1)
+	splitResult2 = splitDataSet(myDat,0,0)
+	print(splitResult2)
+
+	bestFeature = chooseBestFeatureToSplit(myDat)
+	print(bestFeature)
