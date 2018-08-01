@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
-# @Time      :  2018/7/27 16:33
+# @Time      :  2018/8/1 22:32
 # @Auther    :  WangYang
 # @Email     :  evilwangyang@126.com
 # @Project   :  DecisionTree
-# @File      :  DecisionTree_test2.py
-# @Software  :  PyCharm
+# @File      :  DecisionTree_test4.py
+# @Software  :  PyCharm Community Edition
 
 # ********************************************************* 
 import matplotlib.pyplot as plt
@@ -94,16 +94,6 @@ def plotNode(nodeTxt,centerPt,parentPt,nodeType):
 	createPlot.ax1.annotate(nodeTxt,xy=parentPt,xycoords='axes fraction',xytext=centerPt,textcoords='axes fraction',
 	                        va="center",ha="center",bbox=nodeType,arrowprops=arrow_args)
 
-# def createPlot():
-# 	fig = plt.figure(1,facecolor='white')
-# 	fig.clf()
-# 	createPlot.ax1 =plt.subplot(111,frameon=False)
-# 	plotNode('决策节点',(0.5,0.1),(0.1,0.5),decisionNode)
-# 	plotNode('叶节点',(0.8,0.1),(0.3,0.8),leafNode)
-# 	plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-# 	plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-# 	plt.show()
-
 def getNumLeafs(myTree):
 	numLeafs = 0
 	firstStr = list(myTree.keys())[0]
@@ -170,23 +160,34 @@ def createPlot(inTree):
 	plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 	plt.show()
 
+def classify(inputTree,featLabels,testVec):
+	firstStr = list(inputTree.keys())[0]
+	secondDict = inputTree[firstStr]
+	featIndex = featLabels.index(firstStr)
+	for key in secondDict.keys():
+		if testVec[featIndex] == key:
+			if type(secondDict[key]).__name__=='dict':
+				classLabel = classify(secondDict[key],featLabels,testVec)
+			else:
+				classLabel = secondDict[key]
+	return classLabel
+
+def storeTree(inputTree,filename):
+	import pickle
+	fw = open(filename,'wb')
+	pickle.dump(inputTree,fw)
+	fw.close()
+
+def grabTree(filename):
+	import pickle
+	fr = open(filename)
+	return pickle.load(fr)
 
 if __name__ == '__main__':
-	# createPlot()
-
-	# Tree1 = retrieveTree(1)
-	# print(Tree1)
-	# myTree = retrieveTree(0)
-	# Leafs = getNumLeafs(myTree)
-	# print(Leafs)
-	# Depth = getTreeDepth(myTree)
-	# print(Depth)
-
-	dataSet,labels = createDataSet()
-	myTree = createTree(dataSet,labels)
-	print(myTree)
-	createPlot(myTree)
-
-	myTree['no surfacing'][3] = 'maybe'
-	print(myTree)
-	createPlot(myTree)
+	fr = open('lenses.txt')
+	lenses = [inst.strip().split('\t') for inst in fr.readlines()]
+	lensesLabels = ['age','prescript','astigmatic','tearRate']
+	lensesTree = createTree(lenses,lensesLabels)
+	print(lensesTree)
+	createPlot(lensesTree)
+	storeTree(lensesTree,'lensesTree.txt')
